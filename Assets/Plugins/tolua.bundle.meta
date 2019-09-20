@@ -10,7 +10,7 @@ PluginImporter:
     Android:
       enabled: 0
       settings:
-        CPU: AnyCPU
+      CPU: AnyCPU
     Any:
       enabled: 0
       settings: {}
@@ -21,42 +21,42 @@ PluginImporter:
         DefaultValueInitialized: true
         OS: OSX
     Linux:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: x86
+      CPU: x86
     Linux64:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: x86_64
+      CPU: x86_64
     LinuxUniversal:
-      enabled: 1
+      enabled: 0
       settings:
         CPU: AnyCPU
     OSXIntel:
       enabled: 1
       settings:
-        CPU: AnyCPU
+      CPU: AnyCPU
     OSXIntel64:
       enabled: 1
       settings:
-        CPU: AnyCPU
+      CPU: AnyCPU
     OSXUniversal:
       enabled: 1
       settings:
-        CPU: AnyCPU
+      CPU: AnyCPU
     Win:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: AnyCPU
+      CPU: AnyCPU
     Win64:
-      enabled: 1
+      enabled: 0
       settings:
-        CPU: AnyCPU
+      CPU: AnyCPU
     iOS:
       enabled: 0
       settings:
-        CompileFlags: 
-        FrameworkDependencies: 
+      CompileFlags: 
+      FrameworkDependencies: 
   userData: 
   assetBundleName: 
   assetBundleVariant: 

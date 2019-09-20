@@ -9,9 +9,9 @@ public class LuaInterface_EventObjectWrap
 	{
 		IntPtr lazyWrapFunc = Marshal.GetFunctionPointerForDelegate((LuaCSFunction)LazyWrap);
 		L.BeginClass(typeof(LuaInterface.EventObject), typeof(System.Object));
-		L.RegFunction("__add", op_Addition);
-		L.RegFunction("__sub", op_Subtraction);
-		L.RegFunction("__tostring", ToLua.op_ToString);
+		L.RegFunction("__add", new LuaCSFunction(op_Addition));
+		L.RegFunction("__sub", new LuaCSFunction(op_Subtraction));
+		L.RegFunction("__tostring", new LuaCSFunction(ToLua.op_ToString));
 		L.EndClass();
 	}
 
@@ -20,7 +20,7 @@ public class LuaInterface_EventObjectWrap
 	{
         try
         {
-            EventObject arg0 = (EventObject)ToLua.CheckObject(L, 1, typeof(EventObject));
+            EventObject arg0 = StackTraits<EventObject>.Check(L, 1);
             arg0.func = ToLua.CheckDelegate(arg0.type, L, 2);
             arg0.op = EventOp.Sub;
             ToLua.Push(L, arg0);
@@ -37,7 +37,7 @@ public class LuaInterface_EventObjectWrap
 	{
         try
         {
-            EventObject arg0 = (EventObject)ToLua.CheckObject(L, 1, typeof(EventObject));
+            EventObject arg0 = StackTraits<EventObject>.Check(L, 1);
             arg0.func = ToLua.CheckDelegate(arg0.type, L, 2);
             arg0.op = EventOp.Add;
             ToLua.Push(L, arg0);
