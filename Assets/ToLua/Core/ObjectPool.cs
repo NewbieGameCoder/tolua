@@ -46,6 +46,7 @@ namespace LuaInterface
             internal virtual object GetResult() { return null; }
             internal virtual int Remove(LuaObjectPool objPool, int pos, bool bLogGC) { return -1; }
             internal virtual void Destroy(LuaObjectPool objPool, int pos, bool bClean, bool bLogGC) { }
+            internal virtual void DefaultReplace(object obj) {}
 
             public static void Clear()
             {
@@ -102,6 +103,11 @@ namespace LuaInterface
                 }
 
                 obj = default(T);
+            }
+
+            internal override void DefaultReplace(object obj)
+            {
+                this.obj = (T)obj;
             }
 
             private void RemoveMapping(LuaObjectPool objPool, int pos)
@@ -264,18 +270,19 @@ namespace LuaInterface
         }
 
         // update valuetype etc
-        public T Replace<T>(int pos, T o)
+        public void Replace<T>(int pos, T o)
         {
             if (pos > 1 && pos < count)
             {
-                var gNode = list[pos] as PoolNode<T>;
-                var result = gNode.obj;
-                gNode.obj = o;
+                var node = list[pos];
+                var gNode = node as PoolNode<T>;
 
-                return result;
+                if (gNode != null)
+                {
+                    gNode.obj = o;
+                }
+                else node.DefaultReplace(o);
             }
-
-            return default(T);
         }
 
         public void StepCollect()

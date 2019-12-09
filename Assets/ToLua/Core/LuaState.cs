@@ -87,6 +87,7 @@ namespace LuaInterface
 
         private static LuaState mainState = null;
         private static LuaState injectionState = null;
+        static readonly Il2cppType il2cpp = new Il2cppType();
         private static Dictionary<IntPtr, LuaState> stateMap = new Dictionary<IntPtr, LuaState>();
 
         private int beginCount = 0;
@@ -2008,7 +2009,14 @@ namespace LuaInterface
                     if (!missSet.Contains(t))
                     {
                         missSet.Add(t);
-                        Debugger.LogWarning("Type {0} not wrap to lua, push as {1}, the warning is only raised once", LuaMisc.GetTypeName(t), LuaMisc.GetTypeName(type));
+                        string notice = "";
+#if UNITY_EDITOR
+                        if (il2cpp.TypeOfIEnumerator.IsAssignableFrom(t) && type == il2cpp.TypeOfIEnumerator)
+                        {
+                            notice = "may trigger unbox,box, ";
+                        }
+#endif
+                        Debugger.LogWarning("Type {0} not wrap to lua, push as {1}, {2}the warning is only raised once", LuaMisc.GetTypeName(t), LuaMisc.GetTypeName(type), notice);
                     }
 #endif
                     return reference;              
@@ -2026,8 +2034,14 @@ namespace LuaInterface
 #if MISS_WARNING
             if (!missSet.Contains(t))
             {
-                missSet.Add(t);
-                Debugger.LogWarning("Type {0} not wrap to lua, push as {1}, the warning is only raised once", LuaMisc.GetTypeName(t), LuaMisc.GetTypeName(type));
+                string notice = "";
+#if UNITY_EDITOR
+                        if (il2cpp.TypeOfIEnumerator.IsAssignableFrom(t) && type == il2cpp.TypeOfIEnumerator)
+                        {
+                            notice = "may trigger unbox,box, ";
+                        }
+#endif
+                        Debugger.LogWarning("Type {0} not wrap to lua, push as {1}, {2}the warning is only raised once", LuaMisc.GetTypeName(t), LuaMisc.GetTypeName(type), notice);
             }            
 #endif
 
@@ -2036,6 +2050,15 @@ namespace LuaInterface
 
         Type GetBaseType(Type t)
         {
+            if (il2cpp.TypeOfIEnumerator.IsAssignableFrom(t))
+            {
+                if (t.BaseType is IEnumerator)
+                {
+                    return t.BaseType;
+                }
+                else return il2cpp.TypeOfIEnumerator;
+            }
+
             if (t.IsGenericType)
             {
                 return GetSpecialGenericType(t);

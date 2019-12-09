@@ -129,6 +129,10 @@ public class UseDictionary : MonoBehaviour
         L.BeginModule("Dictionary");
         System_Collections_Generic_Dictionary_int_TestAccount_KeyCollectionWrap.Register(L);
         System_Collections_Generic_Dictionary_int_TestAccount_ValueCollectionWrap.Register(L);
+        //after registed, no gc
+		System_Collections_Generic_Dictionary_int_TestAccount_EnumeratorWrap.Register(L);
+		System_Collections_Generic_Dictionary_int_TestAccount_KeyCollection_EnumeratorWrap.Register(L);
+		System_Collections_Generic_Dictionary_int_TestAccount_ValueCollection_EnumeratorWrap.Register(L);
         L.EndModule();
         L.EndModule();
         L.EndModule();

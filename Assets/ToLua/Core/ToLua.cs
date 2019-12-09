@@ -2499,6 +2499,10 @@ namespace LuaInterface
                 else
                 {
                     int iterMetatable = LuaStatic.GetIterMetatable(L);
+#if UNITY_EDITOR
+                    if (iter.GetType().IsValueType)
+                        Debugger.LogWarning("Type {0} not wrap to lua, push as System.Collection.IEnumerator, may trigger unbox,box, the warning is only raised once", LuaMisc.GetTypeName(iter.GetType()));
+#endif
                     PushUserData<object>(L, iter, iterMetatable);
                 }            
             }
@@ -2854,7 +2858,7 @@ namespace LuaInterface
             }
         }
 
-        public static void SetBack<T>(IntPtr L, int stackPos, T o) where T : struct
+        public static void SetBack<T>(IntPtr L, int stackPos, T o)
         {
             int udata = LuaDLL.tolua_rawnetobj(L, stackPos);
             ObjectTranslator translator = ObjectTranslator.Get(L);

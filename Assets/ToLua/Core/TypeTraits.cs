@@ -241,7 +241,7 @@ namespace LuaInterface
     {
         static public Action<IntPtr, T> Push = SelectPush();
         static public Func<IntPtr, int, T> Check = DefaultCheck;
-        static public Func<IntPtr, int, T> To = DefaultTo;               
+        static public Func<IntPtr, int, T> To = ToLua.ToGenericObject<T>;               
 
         static public void Init(Action<IntPtr, T> push, Func<IntPtr, int, T> check, Func<IntPtr, int, T> to)
         {
@@ -300,11 +300,6 @@ namespace LuaInterface
             }
         }
 
-        static T DefaultTo(IntPtr L, int pos)
-        {
-            return ToLua.ToGenericObject<T>(L, pos);
-        }
-        
         static T DefaultCheck(IntPtr L, int stackPos)
         {
             int udata = LuaDLL.tolua_rawnetobj(L, stackPos);            

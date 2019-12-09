@@ -118,7 +118,7 @@ namespace LuaInterface
             objects.Destroy(udata, false, LogGC);
         }
 
-        public void SetBack<T>(int index, T o) where T : struct
+        public void SetBack<T>(int index, T o)
         {
             objects.Replace(index, o);
         }

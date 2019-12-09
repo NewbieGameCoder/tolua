@@ -1706,7 +1706,7 @@ public static class ToLuaExport
         }
         else if (IsIEnumerator(t))
         {
-            return "Push";
+            return t.IsValueType && allTypes.Contains(t) ? "PushValue" : "Push";
         }
         else if (t == typeof(LayerMask))
         {
@@ -2259,7 +2259,14 @@ public static class ToLuaExport
         }
         else if (IsIEnumerator(type))
         {
-            sb.AppendFormat("{0}{1} obj = ToLua.CheckIter(L, {2});\r\n", head, className, pos);
+            if (type.IsValueType && allTypes.Contains(type))
+            {
+                sb.AppendFormat("{0}{1} obj = StackTraits<{1}>.Check(L, {2});\r\n", head, className, pos);
+            }
+            else
+            {
+                sb.AppendFormat("{0}System.Collections.IEnumerator obj = ToLua.CheckIter(L, {1});\r\n", head, pos);
+            }
         }
         else
         {
@@ -2438,13 +2445,21 @@ public static class ToLuaExport
         }
         else if (IsIEnumerator(varType))
         {
-            if (beCheckTypes)
-            {                
-                sb.AppendFormat("{0}System.Collections.IEnumerator {1} = (System.Collections.IEnumerator)ToLua.ToObject(L, {2});\r\n", head, arg, stackPos);
+            if (varType.IsValueType && allTypes.Contains(varType))
+            {
+                string func = beCheckTypes ? "To" : "Check";
+                sb.AppendFormat("{0}{1} {2} = StackTraits<{1}>.{3}(L, {4});\r\n", head, str, arg, func, stackPos);
             }
             else
             {
-                sb.AppendFormat("{0}System.Collections.IEnumerator {1} = ToLua.CheckIter(L, {2});\r\n", head, arg, stackPos);
+                if (beCheckTypes)
+                {                
+                    sb.AppendFormat("{0}System.Collections.IEnumerator {1} = (System.Collections.IEnumerator)ToLua.ToObject(L, {2});\r\n", head, arg, stackPos);
+                }
+                else
+                {
+                    sb.AppendFormat("{0}System.Collections.IEnumerator {1} = ToLua.CheckIter(L, {2});\r\n", head, arg, stackPos);
+                }
             }
         }
         else if (varType.IsArray && varType.GetArrayRank() == 1)
@@ -3055,7 +3070,7 @@ public static class ToLuaExport
         }
         else if(IsIEnumerator(t))
         {
-            return LuaMisc.GetTypeName(typeof(IEnumerator));
+            return LuaMisc.GetTypeName(t);
         }
 
         return LuaMisc.GetTypeName(t);
@@ -3077,7 +3092,7 @@ public static class ToLuaExport
         }
         else if (IsIEnumerator(t))
         {            
-            str = string.Format("{0}{1}", GetTypeStr(typeof(IEnumerator)), sep);
+            str = string.Format("{0}{1}", GetTypeStr(t), sep);
         }
         else
         {
