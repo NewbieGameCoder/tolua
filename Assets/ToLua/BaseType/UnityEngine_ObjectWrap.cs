@@ -419,7 +419,7 @@ public class UnityEngine_ObjectWrap
 			o = ToLua.ToObject(L, 1);
 			UnityEngine.Object obj = (UnityEngine.Object)o;
 			UnityEngine.HideFlags ret = obj.hideFlags;
-			ToLua.Push(L, ret);
+			ToLua.PushValue(L, ret);
 			return 1;
 		}
 		catch(Exception e)
@@ -456,7 +456,7 @@ public class UnityEngine_ObjectWrap
 		{
 			o = ToLua.ToObject(L, 1);
 			UnityEngine.Object obj = (UnityEngine.Object)o;
-			UnityEngine.HideFlags arg0 = (UnityEngine.HideFlags)ToLua.CheckObject(L, 2, TypeTraits<UnityEngine.HideFlags>.type);
+			UnityEngine.HideFlags arg0 = ToLua.CheckObject<UnityEngine.HideFlags>(L, 2);
 			obj.hideFlags = arg0;
 			return 0;
 		}

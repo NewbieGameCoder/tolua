@@ -1658,10 +1658,10 @@ public static class ToLuaExport
 
     static bool IsNotCheckGeneric(Type t)
     {
-        if (t.IsEnum /*|| t.IsValueType*/)
+        /*if (t.IsEnum || t.IsValueType)
         {
             return true;
-        }
+        }*/
 
         if (t.IsGenericType && (t.GetGenericTypeDefinition() == typeof(List<>) || t.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
         {
@@ -1693,7 +1693,7 @@ public static class ToLuaExport
 
     static string GetPushFunction(Type t, bool isByteBuffer = false)
     {        
-        if (t.IsEnum || t.IsPrimitive || t == typeof(string) || t == typeof(LuaTable) || t == typeof(LuaCSFunction) || t == typeof(LuaThread) || t == typeof(LuaFunction)
+        if (/*t.IsEnum || */t.IsPrimitive || t == typeof(string) || t == typeof(LuaTable) || t == typeof(LuaCSFunction) || t == typeof(LuaThread) || t == typeof(LuaFunction)
             || t == typeof(Type) || t == typeof(IntPtr) || typeof(Delegate).IsAssignableFrom(t) || t == typeof(LuaByteBuffer) // || t == typeof(LuaInteger64)
             || t == typeof(Vector3) || t == typeof(Vector2) || t == typeof(Vector4) || t == typeof(Quaternion) || t == typeof(Color) || t == typeof(RaycastHit)
             || t == typeof(Ray) || t == typeof(Touch) || t == typeof(Bounds) || t == typeof(object))
@@ -2593,7 +2593,7 @@ public static class ToLuaExport
                 sb.AppendFormat("{0}{1} {2} = ToLua.CheckNullable<{3}>(L, {4});\r\n", head, str, arg, GetTypeStr(t), stackPos);
             }
         }
-        else if (varType.IsValueType && !varType.IsEnum)
+        else if (varType.IsValueType /*&& !varType.IsEnum*/)
         {
             string func = beCheckTypes ? "To" : "Check";
             sb.AppendFormat("{0}{1} {2} = StackTraits<{1}>.{3}(L, {4});\r\n", head, str, arg, func, stackPos);
@@ -3909,46 +3909,33 @@ public static class ToLuaExport
         {
             sb.AppendFormat("\t\tL.RegVar(\"{0}\", new LuaCSFunction(get_{0}), null);\r\n", fields[i].Name);
         }
-        
-        sb.AppendFormat("\t\tL.RegFunction(\"IntToEnum\", new LuaCSFunction(IntToEnum));\r\n");
+
+		sb.AppendFormat("\t\tL.RegFunction(\"ToInt\", new LuaCSFunction(EnumTrait<{0}>.ToInt));\r\n", className);
+		sb.AppendFormat("\t\tL.RegFunction(\"IntToEnum\", new LuaCSFunction(EnumTrait<{0}>.IntToEnum));\r\n", className);
+		sb.AppendFormat("\t\tL.RegFunction(\"CompareTo\", new LuaCSFunction(EnumTrait<{0}>.CompareTo));\r\n", className);
+		sb.AppendFormat("\t\tL.RegFunction(\"ToString\", new LuaCSFunction(EnumTrait<{0}>.ToString));\r\n", className);
+#if !LUAC_5_3
+		sb.AppendFormat("\t\tL.RegFunction(\"__eq\", new LuaCSFunction(System_EnumWrap.Equals));\r\n", className);
+#endif
+		sb.AppendFormat("\t\tL.RegFunction(\"Equals\", new LuaCSFunction(EnumTrait<{0}>.Equals));\r\n", className);
+		sb.AppendFormat("\t\tL.RegFunction(\"__tostring\", new LuaCSFunction(EnumTrait<{0}>.ToString));\r\n", className);
         sb.AppendFormat("\t\tL.EndEnum();\r\n");
-        sb.AppendFormat("\t\tTypeTraits<{0}>.Check = CheckType;\r\n", className);
-        sb.AppendFormat("\t\tStackTraits<{0}>.Push = Push;\r\n", className);
+        sb.AppendFormat("\t\tTypeTraits<{0}>.Check = EnumTrait<{0}>.CheckType;\r\n", className);
+        sb.AppendFormat("\t\tStackTraits<{0}>.Push = ToLua.PushData<{0}>;\r\n", className);
+        sb.AppendFormat("\t\tEnumTrait<{0}>.IntToEnumTransfer = (i) => ({0})i;\r\n", className);
+        sb.AppendFormat("\t\tEnumTrait<{0}>.EnumToInt = (e) => (int)e;\r\n", className);
         sb.AppendLineEx("\t}");
         sb.AppendLineEx();
-
-        sb.AppendFormat("\tstatic void Push(IntPtr L, {0} arg)\r\n", className);
-        sb.AppendLineEx("\t{");
-        sb.AppendLineEx("\t\tToLua.Push(L, arg);");
-        sb.AppendLineEx("\t}");
-        sb.AppendLineEx();
-
-        sb.AppendFormat("\tstatic Type TypeOf_{0} = typeof({1});\r\n", wrapClassName, className);
-        sb.AppendLineEx();
-
-        sb.AppendLineEx("\tstatic bool CheckType(IntPtr L, int pos)");
-        sb.AppendLineEx("\t{");
-        sb.AppendFormat("\t\treturn TypeChecker.CheckEnumType(TypeOf_{0}, L, pos);\r\n", wrapClassName);
-        sb.AppendLineEx("\t}");        
 
         for (int i = 0; i < fields.Length; i++)
         {
             sb.AppendLineEx("\r\n\t[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]");
             sb.AppendFormat("\tstatic int get_{0}(IntPtr L)\r\n", fields[i].Name);
             sb.AppendLineEx("\t{");
-            sb.AppendFormat("\t\tToLua.Push(L, {0}.{1});\r\n", className, fields[i].Name);
+            sb.AppendFormat("\t\tToLua.PushData(L, {0}.{1});\r\n", className, fields[i].Name);
             sb.AppendLineEx("\t\treturn 1;");
             sb.AppendLineEx("\t}");            
         }
-
-        sb.AppendLineEx("\r\n\t[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]");
-        sb.AppendLineEx("\tstatic int IntToEnum(IntPtr L)");
-        sb.AppendLineEx("\t{");
-        sb.AppendLineEx("\t\tint arg0 = (int)LuaDLL.lua_tointeger(L, 1);");
-        sb.AppendFormat("\t\t{0} o = ({0})arg0;\r\n", className);
-        sb.AppendLineEx("\t\tToLua.Push(L, o);");
-        sb.AppendLineEx("\t\treturn 1;");
-        sb.AppendLineEx("\t}");    
     }
 
     static string CreateDelegate = @"    

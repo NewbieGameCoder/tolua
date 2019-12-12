@@ -19,7 +19,7 @@ public class AccessingEnum : MonoBehaviour
                     print('enum compare int is ok')                
                 end
 
-                if space == e then
+                if e == space then
                     print('enum compare enum is ok')
                 end
 
@@ -52,10 +52,13 @@ public class AccessingEnum : MonoBehaviour
 
         state.DoString(script, "AccessingEnum.cs");
         state["space"] = Space.World;
+        // no gc
+        // state.PushValue(Space.World);
+        // state.LuaSetGlobal("space");
 
         LuaFunction func = state.GetFunction("TestEnum");
         func.BeginPCall();
-        func.Push(Space.World);
+        func.PushData(Space.World);
         func.PCall();
         func.EndPCall();
         func.Dispose();        
@@ -96,7 +99,7 @@ public class AccessingEnum : MonoBehaviour
             func.BeginPCall();
             func.Push(light);
             LightType type = (LightType)(count++ % 4);
-            func.Push(type);
+            func.PushData(type);
             func.PCall();
             func.EndPCall();
             func.Dispose();

@@ -1134,10 +1134,9 @@ namespace LuaInterface
                         LuaDLL.luaL_argerror(L, stackPos, string.Format("{0} expected, got {1}", LuaMisc.GetTypeName(type), LuaMisc.GetTypeName(eleType)));
                     }
                 }
-                
-                return null;
+                else if (udata == 1) return null;
             }
-            else if (LuaDLL.lua_isnil(L, stackPos))
+            else if (TypeTraitsBase.IsNilType(type.IsValueType, type) && LuaDLL.lua_isnil(L, stackPos))
             {
                 return null;
             }
@@ -1168,9 +1167,9 @@ namespace LuaInterface
                         LuaDLL.luaL_argerror(L, stackPos, string.Format("{0} expected, got {1}", TypeTraits<T>.GetTypeName(), LuaMisc.GetTypeName(eleType)));
                     }
                 }
-                return default(T);
+                else if (udata == 1) return default(T);
             }
-            else if (LuaDLL.lua_isnil(L, stackPos))
+            else if (TypeTraitsBase.IsNilType(TypeTraits<T>.IsValueType, type) && LuaDLL.lua_isnil(L, stackPos))
             {
                 return default(T);
             }
@@ -2510,6 +2509,9 @@ namespace LuaInterface
 
         public static void Push(IntPtr L, System.Enum e)
         {
+#if UNITY_EDITOR
+            Debugger.LogWarning("trigger boxing, regenerate all wrap files can took most advantage of saving the boxing cost");
+#endif
             object obj = null;
             int enumMetatable = LuaStatic.GetEnumObject(L, e, out obj);
             PushUserData<object>(L, obj, enumMetatable);

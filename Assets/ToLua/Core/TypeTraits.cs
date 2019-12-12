@@ -28,6 +28,8 @@ namespace LuaInterface
 {
     public static class TypeTraitsBase
     {
+        static Il2cppType il2cpp = new Il2cppType();
+        
         public static Func<IntPtr, int, bool> GetDefaultCheck(bool IsValueType, Type type)
         {
             int nilType = -1;
@@ -80,14 +82,14 @@ namespace LuaInterface
             };
         }
 
-        static bool IsNilType(bool IsValueType, Type type)
+        public static bool IsNilType(bool IsValueType, Type type)
         {
             if (!IsValueType)
             {
                 return true;
             }
 
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == il2cpp.TypeofGenericNullObject)
             {
                 return true;
             }
@@ -317,9 +319,9 @@ namespace LuaInterface
                     }
                     else LuaDLL.luaL_argerror(L, stackPos, string.Format("{0} expected, got {1}", TypeTraits<T>.GetTypeName(), eleType != null ? eleType.FullName : "null")); 
                 }
-                return default(T);
+                else if (udata == 1) return default(T);
             }
-            else if (LuaDLL.lua_isnil(L, stackPos) && !TypeTraits<T>.IsValueType)
+            else if (TypeTraitsBase.IsNilType(TypeTraits<T>.IsValueType, TypeTraits<T>.type) && LuaDLL.lua_isnil(L, stackPos))
             {
                 return default(T);
             }
