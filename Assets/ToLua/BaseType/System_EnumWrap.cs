@@ -6,6 +6,9 @@ public class System_EnumWrap
 {
 	public static void Register(LuaState L)
 	{
+#if !LUAC_5_3
+		L.BindEnumEqualFunction(new LuaCSFunction(Equals));
+#endif
 		L.BeginClass(typeof(System.Enum), null);
 		L.RegFunction("GetTypeCode", new LuaCSFunction(GetTypeCode));
 		L.RegFunction("GetValues", new LuaCSFunction(GetValues));
@@ -15,8 +18,13 @@ public class System_EnumWrap
 		L.RegFunction("GetUnderlyingType", new LuaCSFunction(GetUnderlyingType));
 		L.RegFunction("CompareTo", new LuaCSFunction(CompareTo));
 		L.RegFunction("ToString", new LuaCSFunction(ToString));
+#if !LUAC_5_3
+		L.RegEnumEqualFunction("Equals");
+		L.RegEnumEqualFunction("__eq");
+#else 
 		L.RegFunction("Equals", new LuaCSFunction(Equals));
 		L.RegFunction("__eq", new LuaCSFunction(Equals));
+#endif
 		L.RegFunction("GetHashCode", new LuaCSFunction(GetHashCode));
 		L.RegFunction("Format", new LuaCSFunction(Format));
 		L.RegFunction("Parse", new LuaCSFunction(Parse));
@@ -182,7 +190,7 @@ public class System_EnumWrap
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	public static int Equals(IntPtr L)
+	static int Equals(IntPtr L)
 	{
 		try
 		{

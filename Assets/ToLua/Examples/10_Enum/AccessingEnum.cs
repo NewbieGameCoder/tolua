@@ -18,8 +18,8 @@ public class AccessingEnum : MonoBehaviour
                 if not space:Equals(0) then
                     print('enum compare int is ok')                
                 end
-
-                if e == space then
+                
+                if space == e then
                     print('enum compare enum is ok')
                 end
 

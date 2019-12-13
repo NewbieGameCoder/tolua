@@ -546,6 +546,18 @@ namespace LuaInterface
             LuaDLL.tolua_function(L, name, fn);            
         }
 
+#if !LUAC_5_3
+        public void BindEnumEqualFunction(LuaCSFunction func)
+        {
+            IntPtr fn = Marshal.GetFunctionPointerForDelegate(func);
+            LuaDLL.tolua_bind_enum_equal(L, fn);
+        }
+
+        public void RegEnumEqualFunction(string name)
+        {
+            LuaDLL.tolua_push_enum_equal(L, name);            
+        }
+#endif
         public void RegVar(string name, LuaCSFunction get, LuaCSFunction set)
         {            
             IntPtr fget = IntPtr.Zero;

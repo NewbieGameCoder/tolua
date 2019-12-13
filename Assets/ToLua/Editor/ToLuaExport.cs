@@ -3914,9 +3914,9 @@ public static class ToLuaExport
 		sb.AppendFormat("\t\tL.RegFunction(\"IntToEnum\", new LuaCSFunction(EnumTrait<{0}>.IntToEnum));\r\n", className);
 		sb.AppendFormat("\t\tL.RegFunction(\"CompareTo\", new LuaCSFunction(EnumTrait<{0}>.CompareTo));\r\n", className);
 		sb.AppendFormat("\t\tL.RegFunction(\"ToString\", new LuaCSFunction(EnumTrait<{0}>.ToString));\r\n", className);
-#if !LUAC_5_3
-		sb.AppendFormat("\t\tL.RegFunction(\"__eq\", new LuaCSFunction(System_EnumWrap.Equals));\r\n", className);
-#endif
+        sb.AppendFormat("#if !LUAC_5_3\r\n");
+		sb.AppendFormat("\t\tL.RegEnumEqualFunction(\"__eq\");\r\n");
+        sb.AppendFormat("#endif\r\n");
 		sb.AppendFormat("\t\tL.RegFunction(\"Equals\", new LuaCSFunction(EnumTrait<{0}>.Equals));\r\n", className);
 		sb.AppendFormat("\t\tL.RegFunction(\"__tostring\", new LuaCSFunction(EnumTrait<{0}>.ToString));\r\n", className);
         sb.AppendFormat("\t\tL.EndEnum();\r\n");
