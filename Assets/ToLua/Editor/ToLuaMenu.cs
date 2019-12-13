@@ -369,6 +369,7 @@ public static class ToLuaMenu
         for (int i = 0; i < list.Length; i++)
         {
             ToLuaExport.Clear();
+
             ToLuaExport.className = list[i].name;
             ToLuaExport.type = list[i].type;
             ToLuaExport.isStaticClass = list[i].IsStatic;            
@@ -1028,6 +1029,17 @@ public static class ToLuaMenu
         Debug.Log("Copy lua files over");
     }
 
+    [MenuItem("Lua/Process Example Lua Files For Test On Mobile", false, 51)]
+    public static void CopyExampleLuaFilesToRes()
+    {
+        CopyLuaFilesToRes();
+        string destDir = Application.dataPath + "/Resources";
+        string srcDir = Application.dataPath + "/Tolua/Examples/Resources";
+        CopyDirectory(srcDir, destDir, "*.bytes");
+        AssetDatabase.Refresh();
+        Debug.Log("Copy example lua files over");
+    }
+
     [MenuItem("Lua/Copy Lua  files to Persistent", false, 52)]
     public static void CopyLuaFilesToPersistent()
     {
@@ -1294,6 +1306,7 @@ public static class ToLuaMenu
         for (int i = 0; i < list.Length; i++)
         {
             ToLuaExport.Clear();
+
             ToLuaExport.className = list[i].name;
             ToLuaExport.type = list[i].type;
             ToLuaExport.isStaticClass = list[i].IsStatic;

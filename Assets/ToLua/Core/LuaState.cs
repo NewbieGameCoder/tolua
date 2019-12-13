@@ -558,6 +558,7 @@ namespace LuaInterface
             LuaDLL.tolua_push_enum_equal(L, name);            
         }
 #endif
+
         public void RegVar(string name, LuaCSFunction get, LuaCSFunction set)
         {            
             IntPtr fget = IntPtr.Zero;
