@@ -58,7 +58,7 @@ public class AccessingEnum : MonoBehaviour
 
         LuaFunction func = state.GetFunction("TestEnum");
         func.BeginPCall();
-        func.PushData(Space.World);
+        func.PushValue(Space.World);
         func.PCall();
         func.EndPCall();
         func.Dispose();        
@@ -99,7 +99,7 @@ public class AccessingEnum : MonoBehaviour
             func.BeginPCall();
             func.Push(light);
             LightType type = (LightType)(count++ % 4);
-            func.PushData(type);
+            func.PushValue(type);
             func.PCall();
             func.EndPCall();
             func.Dispose();
