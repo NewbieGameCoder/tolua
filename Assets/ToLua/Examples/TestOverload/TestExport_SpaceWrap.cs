@@ -16,7 +16,7 @@ public class TestExport_SpaceWrap
 
 	static void Push(IntPtr L, TestExport.Space arg)
 	{
-		ToLua.Push(L, arg);
+		ToLua.PushData(L, arg);
 	}
 
 	static bool CheckType(IntPtr L, int pos)
@@ -27,7 +27,7 @@ public class TestExport_SpaceWrap
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int get_World(IntPtr L)
 	{
-		ToLua.Push(L, TestExport.Space.World);
+		ToLua.PushData(L, TestExport.Space.World);
 		return 1;
 	}
 
@@ -36,7 +36,7 @@ public class TestExport_SpaceWrap
 	{
 		int arg0 = (int)LuaDLL.lua_tonumber(L, 1);
 		TestExport.Space o = (TestExport.Space)arg0;
-		ToLua.Push(L, o);
+		ToLua.PushData(L, o);
 		return 1;
 	}
 }

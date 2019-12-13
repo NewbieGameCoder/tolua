@@ -6,6 +6,9 @@ public class System_EnumWrap
 {
 	public static void Register(LuaState L)
 	{
+#if !LUAC_5_3
+		L.BindEnumEqualFunction(new LuaCSFunction(Equals));
+#endif
 		L.BeginClass(typeof(System.Enum), null);
 		L.RegFunction("GetTypeCode", new LuaCSFunction(GetTypeCode));
 		L.RegFunction("GetValues", new LuaCSFunction(GetValues));
@@ -15,7 +18,13 @@ public class System_EnumWrap
 		L.RegFunction("GetUnderlyingType", new LuaCSFunction(GetUnderlyingType));
 		L.RegFunction("CompareTo", new LuaCSFunction(CompareTo));
 		L.RegFunction("ToString", new LuaCSFunction(ToString));
+#if !LUAC_5_3
+		L.RegEnumEqualFunction("Equals");
+		L.RegEnumEqualFunction("__eq");
+#else 
 		L.RegFunction("Equals", new LuaCSFunction(Equals));
+		L.RegFunction("__eq", new LuaCSFunction(Equals));
+#endif
 		L.RegFunction("GetHashCode", new LuaCSFunction(GetHashCode));
 		L.RegFunction("Format", new LuaCSFunction(Format));
 		L.RegFunction("Parse", new LuaCSFunction(Parse));
@@ -31,9 +40,9 @@ public class System_EnumWrap
 		try
 		{
 			ToLua.CheckArgsCount(L, 1);
-			System.Enum obj = (System.Enum)ToLua.CheckObject<System.Enum>(L, 1);
+			System.Enum obj = (System.Enum)ToLua.CheckObject<object>(L, 1);
 			System.TypeCode o = obj.GetTypeCode();
-			ToLua.Push(L, o);
+			ToLua.PushValue(L, o);
 			return 1;
 		}
 		catch (Exception e)
@@ -135,7 +144,7 @@ public class System_EnumWrap
 		try
 		{
 			ToLua.CheckArgsCount(L, 2);
-			System.Enum obj = (System.Enum)ToLua.CheckObject<System.Enum>(L, 1);
+			System.Enum obj = (System.Enum)ToLua.CheckObject<object>(L, 1);
 			object arg0 = ToLua.ToVarObject(L, 2);
 			int o = obj.CompareTo(arg0);
 			LuaDLL.lua_pushinteger(L, o);
@@ -156,14 +165,14 @@ public class System_EnumWrap
 
 			if (count == 1)
 			{
-				System.Enum obj = (System.Enum)ToLua.CheckObject<System.Enum>(L, 1);
+				System.Enum obj = (System.Enum)ToLua.CheckObject<object>(L, 1);
 				string o = obj.ToString();
 				LuaDLL.lua_pushstring(L, o);
 				return 1;
 			}
 			else if (count == 2)
 			{
-				System.Enum obj = (System.Enum)ToLua.CheckObject<System.Enum>(L, 1);
+				System.Enum obj = (System.Enum)ToLua.CheckObject<object>(L, 1);
 				string arg0 = ToLua.CheckString(L, 2);
 				string o = obj.ToString(arg0);
 				LuaDLL.lua_pushstring(L, o);
@@ -186,7 +195,7 @@ public class System_EnumWrap
 		try
 		{
 			ToLua.CheckArgsCount(L, 2);
-			System.Enum obj = (System.Enum)ToLua.CheckObject<System.Enum>(L, 1);
+			System.Enum obj = (System.Enum)ToLua.CheckObject<object>(L, 1);
 			object arg0 = ToLua.ToVarObject(L, 2);
 			bool o = obj != null ? obj.Equals(arg0) : arg0 == null;
 			LuaDLL.lua_pushboolean(L, o);
@@ -204,7 +213,7 @@ public class System_EnumWrap
 		try
 		{
 			ToLua.CheckArgsCount(L, 1);
-			System.Enum obj = (System.Enum)ToLua.CheckObject<System.Enum>(L, 1);
+			System.Enum obj = (System.Enum)ToLua.CheckObject<object>(L, 1);
 			int o = obj.GetHashCode();
 			LuaDLL.lua_pushinteger(L, o);
 			return 1;
@@ -308,7 +317,7 @@ public class System_EnumWrap
 	{
 		try
         {
-            object arg0 = ToLua.CheckObject<System.Enum>(L, 1);
+            object arg0 = ToLua.CheckObject<object>(L, 1);
             int ret = Convert.ToInt32(arg0);
             LuaDLL.lua_pushinteger(L, ret);
             return 1;

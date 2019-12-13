@@ -1292,6 +1292,13 @@ namespace LuaInterface
         [DllImport(LUADLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void tolua_function(IntPtr L, string name, IntPtr fn);
 
+#if !LUAC_5_3
+        [DllImport(LUADLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void tolua_bind_enum_equal(IntPtr L, IntPtr fn);
+        [DllImport(LUADLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern void tolua_push_enum_equal(IntPtr L, string name);
+#endif
+
         [DllImport(LUADLL, CallingConvention = CallingConvention.Cdecl)]
         public static extern void tolua_lazyfunction(IntPtr L, string name, IntPtr fn);
 
