@@ -25,17 +25,131 @@ using System;
 using System.Collections;
 
 namespace LuaInterface
-{    
+{
+    public static class TypeTraitsBase
+    {
+        static Il2cppType il2cpp = new Il2cppType();
+        
+        public static Func<IntPtr, int, bool> GetDefaultCheck(bool IsValueType, Type type)
+        {
+            int nilType = -1;
+            return (IntPtr L, int pos) =>
+            {
+                LuaTypes luaType = LuaDLL.lua_type(L, pos);
+                switch (luaType)
+                {
+                    case LuaTypes.LUA_TUSERDATA:
+                        return IsUserData(L, pos, type);
+                    case LuaTypes.LUA_TNIL:
+                        if (nilType != -1)
+                        {
+                            return nilType != 0;
+                        }
+
+                        nilType = IsNilType(IsValueType, type) ? 1 : 0;
+                        return nilType != 0;      
+                    case LuaTypes.LUA_TTABLE:
+                        return IsUserTable(L, pos, type);
+                    default:
+                        return false;
+                }            
+            };
+        }
+
+        public static Func<IntPtr, int> GetLuaReference(Type type)
+        {
+            int metaref = -1;
+            return (IntPtr L )=>
+            {
+#if MULTI_STATE
+                return LuaStatic.GetMetaReference(L, type);
+#else
+                if (metaref > 0)
+                {                
+                    return metaref;
+                }
+
+                metaref = LuaStatic.GetMetaReference(L, type);
+
+                if (metaref > 0)
+                {
+                    LuaState.Get(L).OnDestroy += () => { metaref = -1; };
+                }
+
+                return metaref; 
+#endif
+
+            };
+        }
+
+        public static bool IsNilType(bool IsValueType, Type type)
+        {
+            if (!IsValueType)
+            {
+                return true;
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == il2cpp.TypeofGenericNullObject)
+            {
+                return true;
+            }
+
+            return false;            
+        }
+
+        static bool IsUserData(IntPtr L, int pos, Type type)
+        {
+            int udata = LuaDLL.tolua_rawnetobj(L, pos);
+
+            if (udata != -1)
+            {
+                ObjectTranslator translator = ObjectTranslator.Get(L);
+                Type eleType = translator.CheckOutNodeType(udata);
+                return eleType == null ? udata == 1 : eleType == type || type.IsAssignableFrom(eleType);
+            }
+
+            return false;
+        }
+
+        static bool IsUserTable(IntPtr L, int pos, Type type)
+        {            
+            if (type == TypeTraits<LuaTable>.type)
+            {
+                return true;
+            }
+            else if (type.IsArray)
+            {
+                if (type.GetElementType().IsArray || type.GetArrayRank() > 1)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+            else if (LuaDLL.tolua_isvptrtable(L, pos))
+            {
+                return IsUserData(L, pos, type);
+            }
+
+            return false;
+        }
+    }
+
     public static class TypeTraits<T>
     {        
-        static public Func<IntPtr, int, bool> Check = DefaultCheck;
+        static public Func<IntPtr, int, bool> Check;
+        static readonly public Func<IntPtr, int> GetLuaReference;
         static readonly public Type type = typeof(T);
         static readonly public bool IsValueType = type.IsValueType;
         static readonly public bool IsArray = type.IsArray;
 
         static string typeName = string.Empty;                
-        static int nilType = -1;
-        static int metaref = -1;
+
+        static TypeTraits()
+        {
+            Check = TypeTraitsBase.GetDefaultCheck(IsValueType, type);
+            GetLuaReference = TypeTraitsBase.GetLuaReference(type);
+        }
 
         static public void Init(Func<IntPtr, int, bool> check)
         {            
@@ -54,119 +168,12 @@ namespace LuaInterface
 
             return typeName;
         }
-
-        static public int GetLuaReference(IntPtr L)
-        {
-#if MULTI_STATE
-            return LuaStatic.GetMetaReference(L, type);
-#else
-            if (metaref > 0)
-            {                
-                return metaref;
-            }
-
-            metaref = LuaStatic.GetMetaReference(L, type);
-
-            if (metaref > 0)
-            {
-                LuaState.Get(L).OnDestroy += () => { metaref = -1; };
-            }
-
-            return metaref;
-#endif
-        }   
-
-        static bool DefaultCheck(IntPtr L, int pos)
-        {            
-            LuaTypes luaType = LuaDLL.lua_type(L, pos);
-
-            switch (luaType)
-            {
-                case LuaTypes.LUA_TNIL:
-                    return IsNilType();
-                case LuaTypes.LUA_TUSERDATA:
-                    return IsUserData(L, pos);
-                case LuaTypes.LUA_TTABLE:
-                    return IsUserTable(L, pos);
-                default:
-                    return false;
-            }            
-        }
-
-        static bool IsNilType()
-        {
-            if (nilType != -1)
-            {
-                return nilType != 0;
-            }
-
-            if (!IsValueType)
-            {
-                nilType = 1;
-                return true;
-            }
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                nilType = 1;
-                return true;
-            }
-
-            nilType = 0;
-            return false;            
-        }
-
-        static bool IsUserData(IntPtr L, int pos)
-        {
-            object obj = null;
-            int udata = LuaDLL.tolua_rawnetobj(L, pos);
-
-            if (udata != -1)
-            {
-                ObjectTranslator translator = ObjectTranslator.Get(L);
-                obj = translator.GetObject(udata);
-
-                if (obj != null)
-                {
-                    return obj is T;
-                }
-                else
-                {
-                    return !IsValueType;
-                }
-            }
-
-            return false;
-        }
-
-        static bool IsUserTable(IntPtr L, int pos)
-        {            
-            if (type == TypeTraits<LuaTable>.type)
-            {
-                return true;
-            }
-            else if (type.IsArray)
-            {
-                if (type.GetElementType().IsArray || type.GetArrayRank() > 1)
-                {
-                    return false;
-                }
-
-                return true;
-            }
-            else if (LuaDLL.tolua_isvptrtable(L, pos))
-            {
-                return IsUserData(L, pos);
-            }
-
-            return false;
-        }
     }    
 
     public static class DelegateTraits<T>
     {        
         static DelegateFactory.DelegateCreate _Create = null;
-        static readonly public Type _type = typeof(T);
+        static readonly public Type _type = TypeTraits<T>.type;
 
         static public void Init(DelegateFactory.DelegateCreate func)
         {
@@ -236,7 +243,7 @@ namespace LuaInterface
     {
         static public Action<IntPtr, T> Push = SelectPush();
         static public Func<IntPtr, int, T> Check = DefaultCheck;
-        static public Func<IntPtr, int, T> To = DefaultTo;               
+        static public Func<IntPtr, int, T> To = ToLua.ToGenericObject<T>;               
 
         static public void Init(Action<IntPtr, T> push, Func<IntPtr, int, T> check, Func<IntPtr, int, T> to)
         {
@@ -258,7 +265,7 @@ namespace LuaInterface
 
         static Action<IntPtr, T> SelectPush()
         {
-            if (TypeTraits<T>.IsValueType)
+            if (TypeChecker.IsValueType(TypeTraits<T>.type))
             {
                 return PushValue;
             }
@@ -274,7 +281,7 @@ namespace LuaInterface
 
         static void PushValue(IntPtr L, T o)
         {
-            ToLua.PushStruct(L, o);
+            ToLua.PushData(L, o);
         }
 
         static void PushObject(IntPtr L, T o)
@@ -291,15 +298,10 @@ namespace LuaInterface
             else
             {
                 int arrayMetaTable = LuaStatic.GetArrayMetatable(L);
-                ToLua.PushUserData(L, array, arrayMetaTable);
+                ToLua.PushUserData<object>(L, array, arrayMetaTable);
             }
         }
 
-        static T DefaultTo(IntPtr L, int pos)
-        {
-            return (T)ToLua.ToObject(L, pos);
-        }           
-        
         static T DefaultCheck(IntPtr L, int stackPos)
         {
             int udata = LuaDLL.tolua_rawnetobj(L, stackPos);            
@@ -307,24 +309,19 @@ namespace LuaInterface
             if (udata != -1)
             {
                 ObjectTranslator translator = ObjectTranslator.Get(L);
-                object obj = translator.GetObject(udata);
-
-                if (obj != null)
-                {                    
-                    if (obj is T)
-                    {
-                        return (T)obj;
-                    }
-
-                    LuaDLL.luaL_argerror(L, stackPos, string.Format("{0} expected, got {1}", TypeTraits<T>.GetTypeName(), obj.GetType().FullName));
-                }
-
-                if (!TypeTraits<T>.IsValueType)
+                Type eleType = translator.CheckOutNodeType(udata);
+                if (eleType != null)
                 {
-                    return default(T);
+                    bool bValid = eleType == TypeTraits<T>.type || TypeTraits<T>.type.IsAssignableFrom(eleType);
+                    if (bValid)
+                    {
+                        return translator.GetObject<T>(udata);
+                    }
+                    else LuaDLL.luaL_argerror(L, stackPos, string.Format("{0} expected, got {1}", TypeTraits<T>.GetTypeName(), eleType != null ? eleType.FullName : "null")); 
                 }
+                else if (udata == 1) return default(T);
             }
-            else if (LuaDLL.lua_isnil(L, stackPos) && !TypeTraits<T>.IsValueType)
+            else if (TypeTraitsBase.IsNilType(TypeTraits<T>.IsValueType, TypeTraits<T>.type) && LuaDLL.lua_isnil(L, stackPos))
             {
                 return default(T);
             }

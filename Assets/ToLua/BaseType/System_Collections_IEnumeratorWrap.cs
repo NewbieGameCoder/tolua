@@ -22,6 +22,10 @@ public class System_Collections_IEnumeratorWrap
 			System.Collections.IEnumerator obj = ToLua.CheckIter(L, 1);
 			bool o = obj.MoveNext();
 			LuaDLL.lua_pushboolean(L, o);
+			if (obj.GetType().IsValueType)
+			{
+				ToLua.SetBack(L, 1, obj);
+			}
 			return 1;
 		}
 		catch (Exception e)
@@ -38,6 +42,10 @@ public class System_Collections_IEnumeratorWrap
 			ToLua.CheckArgsCount(L, 1);
 			System.Collections.IEnumerator obj = ToLua.CheckIter(L, 1);
 			obj.Reset();
+			if (obj.GetType().IsValueType)
+			{
+				ToLua.SetBack(L, 1, obj);
+			}
 			return 0;
 		}
 		catch (Exception e)

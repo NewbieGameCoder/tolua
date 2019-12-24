@@ -148,7 +148,7 @@ public class System_StringWrap
 			ToLua.CheckArgsCount(L, 1);
 			System.String obj = (System.String)ToLua.CheckObject<System.String>(L, 1);
 			System.TypeCode o = obj.GetTypeCode();
-			ToLua.Push(L, o);
+			ToLua.PushValue(L, o);
 			return 1;
 		}
 		catch (Exception e)

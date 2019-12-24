@@ -7,11 +7,11 @@ public class System_Collections_Generic_Dictionary_int_TestAccount_KeyCollection
 	public static void Register(LuaState L)
 	{
 		L.BeginClass(typeof(System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection), typeof(System.Object), "KeyCollection");
-		L.RegFunction("CopyTo", CopyTo);
-		L.RegFunction("GetEnumerator", GetEnumerator);
-		L.RegFunction("New", _CreateSystem_Collections_Generic_Dictionary_int_TestAccount_KeyCollection);
-		L.RegFunction("__tostring", ToLua.op_ToString);
-		L.RegVar("Count", get_Count, null);
+		L.RegFunction("GetEnumerator", new LuaCSFunction(GetEnumerator));
+		L.RegFunction("CopyTo", new LuaCSFunction(CopyTo));
+		L.RegFunction("New", new LuaCSFunction(_CreateSystem_Collections_Generic_Dictionary_int_TestAccount_KeyCollection));
+		L.RegFunction("__tostring", new LuaCSFunction(ToLua.op_ToString));
+		L.RegVar("Count", new LuaCSFunction(get_Count), null);
 		L.EndClass();
 	}
 
@@ -24,7 +24,7 @@ public class System_Collections_Generic_Dictionary_int_TestAccount_KeyCollection
 
 			if (count == 1)
 			{
-				System.Collections.Generic.Dictionary<int,TestAccount> arg0 = (System.Collections.Generic.Dictionary<int,TestAccount>)ToLua.CheckObject(L, 1, typeof(System.Collections.Generic.Dictionary<int,TestAccount>));
+				System.Collections.Generic.Dictionary<int,TestAccount> arg0 = (System.Collections.Generic.Dictionary<int,TestAccount>)ToLua.CheckObject(L, 1, TypeTraits<System.Collections.Generic.Dictionary<int,TestAccount>>.type);
 				System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection obj = new System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection(arg0);
 				ToLua.PushSealed(L, obj);
 				return 1;
@@ -41,14 +41,31 @@ public class System_Collections_Generic_Dictionary_int_TestAccount_KeyCollection
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+	static int GetEnumerator(IntPtr L)
+	{
+		try
+		{
+			ToLua.CheckArgsCount(L, 1);
+			System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection obj = ToLua.CheckObject<System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection>(L, 1);
+			System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection.Enumerator o = obj.GetEnumerator();
+			ToLua.PushValue(L, o);
+			return 1;
+		}
+		catch (Exception e)
+		{
+			return LuaDLL.toluaL_exception(L, e);
+		}
+	}
+
+	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int CopyTo(IntPtr L)
 	{
 		try
 		{
 			ToLua.CheckArgsCount(L, 3);
-			System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection obj = (System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection)ToLua.CheckObject(L, 1, typeof(System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection));
+			System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection obj = ToLua.CheckObject<System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection>(L, 1);
 			int[] arg0 = ToLua.CheckNumberArray<int>(L, 2);
-			int arg1 = (int)LuaDLL.luaL_checknumber(L, 3);
+			int arg1 = (int)LuaDLL.luaL_checkinteger(L, 3);
 			obj.CopyTo(arg0, arg1);
 			return 0;
 		}
@@ -59,38 +76,19 @@ public class System_Collections_Generic_Dictionary_int_TestAccount_KeyCollection
 	}
 
 	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-	static int GetEnumerator(IntPtr L)
-	{
-		try
-		{
-			ToLua.CheckArgsCount(L, 1);
-			System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection obj = (System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection)ToLua.CheckObject(L, 1, typeof(System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection));
-			System.Collections.IEnumerator o = obj.GetEnumerator();
-			ToLua.Push(L, o);
-			return 1;
-		}
-		catch (Exception e)
-		{
-			return LuaDLL.toluaL_exception(L, e);
-		}
-	}
-
-	[MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
 	static int get_Count(IntPtr L)
 	{
-		object o = null;
-
+		System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection obj = null;
 		try
 		{
-			o = ToLua.ToObject(L, 1);
-			System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection obj = (System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection)o;
+			obj = (System.Collections.Generic.Dictionary<int,TestAccount>.KeyCollection)ToLua.ToObject(L, 1);
 			int ret = obj.Count;
 			LuaDLL.lua_pushinteger(L, ret);
 			return 1;
 		}
 		catch(Exception e)
 		{
-			return LuaDLL.toluaL_exception(L, e, o, "attempt to index Count on a nil value");
+			return LuaDLL.toluaL_exception(L, e, obj, "attempt to index Count on a nil value");
 		}
 	}
 }

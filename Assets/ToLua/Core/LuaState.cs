@@ -87,6 +87,7 @@ namespace LuaInterface
 
         private static LuaState mainState = null;
         private static LuaState injectionState = null;
+        static readonly Il2cppType il2cpp = new Il2cppType();
         private static Dictionary<IntPtr, LuaState> stateMap = new Dictionary<IntPtr, LuaState>();
 
         private int beginCount = 0;
@@ -545,10 +546,18 @@ namespace LuaInterface
             LuaDLL.tolua_function(L, name, fn);            
         }
 
-        public void RegLazyFunction(string name, IntPtr func)
+#if !LUAC_5_3
+        public void BindEnumEqualFunction(LuaCSFunction func)
         {
-            LuaDLL.tolua_lazyfunction(L, name, func);
+            IntPtr fn = Marshal.GetFunctionPointerForDelegate(func);
+            LuaDLL.tolua_bind_enum_equal(L, fn);
         }
+
+        public void RegEnumEqualFunction(string name)
+        {
+            LuaDLL.tolua_push_enum_equal(L, name);            
+        }
+#endif
 
         public void RegVar(string name, LuaCSFunction get, LuaCSFunction set)
         {            
@@ -566,11 +575,6 @@ namespace LuaInterface
             }
 
             LuaDLL.tolua_variable(L, name, fget, fset);
-        }
-
-        public void RegLazyVar(string name, bool get, bool set, IntPtr dispacher)
-        {
-            LuaDLL.tolua_lazyVariable(L, name, get, set, dispacher);
         }
 
         public void RegConstant(string name, double d)
@@ -1632,7 +1636,7 @@ namespace LuaInterface
 
             if (udata != -1)
             {
-                object obj = translator.GetObject(udata);
+                object obj = translator.GetObject<object>(udata);
 
                 if (obj != null)
                 {                                                  
@@ -1673,6 +1677,11 @@ namespace LuaInterface
         public object CheckObject(int stackPos, Type type)
         {
             return ToLua.CheckObject(L, stackPos, type);
+        }
+        
+        public T CheckObject<T>(int stackPos)
+        {
+            return ToLua.CheckObject<T>(L, stackPos);
         }
 
         public object CheckVarObject(int stackPos, Type type)
@@ -2013,7 +2022,14 @@ namespace LuaInterface
                     if (!missSet.Contains(t))
                     {
                         missSet.Add(t);
-                        Debugger.LogWarning("Type {0} not wrap to lua, push as {1}, the warning is only raised once", LuaMisc.GetTypeName(t), LuaMisc.GetTypeName(type));
+                        string notice = "";
+#if UNITY_EDITOR
+                        if (il2cpp.TypeOfIEnumerator.IsAssignableFrom(t) && type == il2cpp.TypeOfIEnumerator)
+                        {
+                            notice = "may trigger unbox,box, ";
+                        }
+#endif
+                        Debugger.LogWarning("Type {0} not wrap to lua, push as {1}, {2}the warning is only raised once", LuaMisc.GetTypeName(t), LuaMisc.GetTypeName(type), notice);
                     }
 #endif
                     return reference;              
@@ -2031,8 +2047,14 @@ namespace LuaInterface
 #if MISS_WARNING
             if (!missSet.Contains(t))
             {
-                missSet.Add(t);
-                Debugger.LogWarning("Type {0} not wrap to lua, push as {1}, the warning is only raised once", LuaMisc.GetTypeName(t), LuaMisc.GetTypeName(type));
+                string notice = "";
+#if UNITY_EDITOR
+                        if (il2cpp.TypeOfIEnumerator.IsAssignableFrom(t) && type == il2cpp.TypeOfIEnumerator)
+                        {
+                            notice = "may trigger unbox,box, ";
+                        }
+#endif
+                        Debugger.LogWarning("Type {0} not wrap to lua, push as {1}, {2}the warning is only raised once", LuaMisc.GetTypeName(t), LuaMisc.GetTypeName(type), notice);
             }            
 #endif
 
@@ -2041,6 +2063,15 @@ namespace LuaInterface
 
         Type GetBaseType(Type t)
         {
+            if (il2cpp.TypeOfIEnumerator.IsAssignableFrom(t))
+            {
+                if (t.BaseType is IEnumerator)
+                {
+                    return t.BaseType;
+                }
+                else return il2cpp.TypeOfIEnumerator;
+            }
+
             if (t.IsGenericType)
             {
                 return GetSpecialGenericType(t);

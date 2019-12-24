@@ -211,7 +211,7 @@ public class System_TypeWrap
 			ToLua.CheckArgsCount(L, 1);
 			System.Type arg0 = ToLua.CheckMonoType(L, 1);
 			System.TypeCode o = System.Type.GetTypeCode(arg0);
-			ToLua.Push(L, o);
+			ToLua.PushValue(L, o);
 			return 1;
 		}
 		catch (Exception e)
@@ -540,7 +540,7 @@ public class System_TypeWrap
 		{
 			ToLua.CheckArgsCount(L, 5);
 			System.Type obj = ToLua.CheckMonoType(L, 1);
-			System.Reflection.MemberTypes arg0 = (System.Reflection.MemberTypes)ToLua.CheckObject(L, 2, TypeTraits<System.Reflection.MemberTypes>.type);
+			System.Reflection.MemberTypes arg0 = ToLua.CheckObject<System.Reflection.MemberTypes>(L, 2);
 			System.Reflection.BindingFlags arg1 = (System.Reflection.BindingFlags)LuaDLL.luaL_checkinteger(L, 3);
 			System.Reflection.MemberFilter arg2 = (System.Reflection.MemberFilter)ToLua.CheckDelegate<System.Reflection.MemberFilter>(L, 4);
 			object arg3 = ToLua.ToVarObject(L, 5);
@@ -916,7 +916,7 @@ public class System_TypeWrap
 			o = ToLua.ToObject(L, 1);
 			System.Type obj = (System.Type)o;
 			System.Reflection.TypeAttributes ret = obj.Attributes;
-			ToLua.Push(L, ret);
+			ToLua.PushValue(L, ret);
 			return 1;
 		}
 		catch(Exception e)
@@ -1614,7 +1614,7 @@ public class System_TypeWrap
 			o = ToLua.ToObject(L, 1);
 			System.Type obj = (System.Type)o;
 			System.Reflection.MemberTypes ret = obj.MemberType;
-			ToLua.Push(L, ret);
+			ToLua.PushValue(L, ret);
 			return 1;
 		}
 		catch(Exception e)
@@ -1880,7 +1880,7 @@ public class System_TypeWrap
 			o = ToLua.ToObject(L, 1);
 			System.Type obj = (System.Type)o;
 			System.Reflection.GenericParameterAttributes ret = obj.GenericParameterAttributes;
-			ToLua.Push(L, ret);
+			ToLua.PushValue(L, ret);
 			return 1;
 		}
 		catch(Exception e)

@@ -65,6 +65,9 @@ public static class CustomSettings
         //_GT(typeof(KeyValuePair<int, TestAccount>)),
         //_GT(typeof(Dictionary<int, TestAccount>.KeyCollection)),
         //_GT(typeof(Dictionary<int, TestAccount>.ValueCollection)),
+        // _GT(typeof(Dictionary<int, TestAccount>.Enumerator)),
+        // _GT(typeof(Dictionary<int, TestAccount>.KeyCollection.Enumerator)),
+        // _GT(typeof(Dictionary<int, TestAccount>.ValueCollection.Enumerator)),
         //_GT(typeof(TestExport)),
         //_GT(typeof(TestExport.Space)),
         //-------------------------------------------------------------------        
